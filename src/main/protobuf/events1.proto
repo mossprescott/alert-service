@@ -1,0 +1,22 @@
+// Simple event service, which accepts a single type of event containing both
+// hear rate and blood pressure data.
+
+syntax = "proto3";
+
+package alerts;
+
+service Events {
+  rpc ReceiveOne (Event) returns (Empty) {}
+
+  rpc ReceiveStream (stream Event) returns (Empty) {}
+}
+
+message Event {
+  uint32 user_id = 1;
+  uint32 heart_rate = 2;
+  uint32 systolic = 3;
+  uint32 diastolic = 4;
+}
+
+message Empty {
+}
