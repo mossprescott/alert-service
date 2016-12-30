@@ -21,7 +21,7 @@ class GrpcServer(port: Int, service: ExecutionContext => ServerServiceDefinition
     server = Some(server0)
     println(s"server started on port $port")
     Runtime.getRuntime.addShutdownHook(new Thread() {
-      self.stop()
+      override def run = self.stop()
     })
   }
   
