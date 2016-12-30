@@ -1,11 +1,8 @@
-package alerts
+package alerts.rpc
 
 import scala.concurrent.{ExecutionContext, Future}
 import io.grpc.{Server, ServerBuilder, ServerServiceDefinition}
 import io.grpc.stub.StreamObserver
-
-import io.grpc.netty.NettyServerBuilder
-import java.net.InetSocketAddress
 
 // Note: this is largely cribbed from the example at 
 // https://github.com/xuwei-k/grpc-scala-sample/blob/master/grpc-scala/src/main/scala/io/grpc/examples/routeguide/RouteGuideServer.scala
@@ -14,8 +11,7 @@ class GrpcServer(port: Int, service: ExecutionContext => ServerServiceDefinition
   private[this] var server: Option[Server] = None
   
   def start(executionContext: ExecutionContext): Unit = {
-    // val builder = ServerBuilder.forPort(port)
-    val builder = NettyServerBuilder.forAddress(new InetSocketAddress("localhost", port))
+    val builder = ServerBuilder.forPort(port)
     val server0 = builder.addService(service(executionContext)).build
     server0.start()
     server = Some(server0)

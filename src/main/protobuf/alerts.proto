@@ -1,0 +1,50 @@
+// Alerts service
+
+syntax = "proto3";
+
+package alerts.rpc;
+
+service Alerts {
+  rpc GetActiveAlerts (AEmpty) returns (ManyAlerts) {}
+  rpc GetActiveAlertsByUser (UserId) returns (ManyAlerts) {}
+  rpc AcknowledgeAlert (AlertId) returns (AEmpty) {}
+}
+
+
+message AbnormalHeartRateAlert {
+  uint32 heart_rate = 2;
+}
+
+message LowBloodPressureAlert {
+  uint32 heart_rate = 1;
+  uint32 systolic = 2;
+  uint32 diastolic = 3;
+}
+
+message Alert {
+  uint32 alert_id = 1;
+  uint32 user_id = 2;
+  oneof alert {
+    AbnormalHeartRateAlert abnormal_heart_rate = 3;
+    LowBloodPressureAlert low_blood_pressure = 4;
+  }
+}
+
+message ManyAlerts {
+  repeated Alert alert = 1;
+}
+
+message UserId {
+  uint32 user_id = 1;
+}
+
+// Note: the data model is bleeding into the API here a bit. Since the rows are
+// partitioned on userId, it's necessary to supply both a userId and the 
+// particular alertId to be able to look up the alert.
+message AlertId {
+  uint32 user_id = 1;
+  uint32 alert_id = 2;
+}
+
+// Note: workaround for error when using google.protobuf.Empty
+message AEmpty {}

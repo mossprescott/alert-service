@@ -3,6 +3,7 @@ scalaVersion := "2.11.8"
 libraryDependencies ++= Seq(
     "io.grpc" % "grpc-netty" % "1.0.1",
     "com.trueaccord.scalapb" %% "scalapb-runtime-grpc" % com.trueaccord.scalapb.compiler.Version.scalapbVersion,
+    "javassist" % "javassist" % "3.12.1.GA",
     "com.websudos" %% "phantom-dsl" % "1.29.6"
 )
 

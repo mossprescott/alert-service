@@ -1,20 +1,46 @@
 package alerts
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 object Main extends App {
   val db = AlertsDb(Seq("192.168.99.100"), 9042, "demo")
   
-  def handleEvent(evt: PairedEvent): Unit = {
-    println(s"received: $evt")
-    Rules.heartRateAlert(evt.id, evt.hr)
-      .map(db.alerts.store(_))  // TODO: log failure/success
-    ()
+  // Note: this is a lame but effective way to generate unique ids, assuming
+  // that the DB is empty when the server starts.
+  val seq = new java.util.concurrent.atomic.AtomicInteger(1)
+  
+  def identified(alert: Alert) = 
+    new IdentifiedAlert(AlertId(seq.getAndIncrement()), alert)
+  
+  val eventHandler = new EventService {
+    def receive(user: UserId, hr: HeartRate, bp: BloodPressure): Unit = {
+      println(s"received: $user; $hr; $bp")  // DEBUG
+      
+      rules.heartRateAlert(user, hr)
+        .map(a => db.alerts.store(identified(a)))  // TODO: log failure/success
+      rules.lowBloodPressureAlert(user, hr, bp)
+        .map(a => db.alerts.store(identified(a)))  // TODO: log failure/success
+      
+      ()
+    }
   }
   
-  val events1 = EventServer(9000, handleEvent)
-  events1.start(ExecutionContext.global)
-  // events1.blockUntilShutdown()
+  val alertHandler = new AlertService {
+    def activeAlerts: Future[Seq[IdentifiedAlert]] = 
+      db.alerts.getActive
+    
+    def activeAlertsByUser(id: UserId): Future[Seq[IdentifiedAlert]] =
+      db.alerts.getActiveByUser(id)
+      
+    def acknowledgeAlert(user: UserId, id: AlertId): Future[Unit] = 
+      db.alerts.delete(user, id)
+  }
   
-  java.lang.Thread.sleep(10000)
+  val events1 = rpc.EventServer(9000, eventHandler)
+  events1.start(ExecutionContext.global)
+
+  val alerts = rpc.AlertServer(9001, alertHandler)
+  alerts.start(ExecutionContext.global)
+
+  events1.blockUntilShutdown()
 }

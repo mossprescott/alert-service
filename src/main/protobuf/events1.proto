@@ -1,14 +1,14 @@
 // Simple event service, which accepts a single type of event containing both
-// hear rate and blood pressure data.
+// heart rate and blood pressure data.
 
 syntax = "proto3";
 
-package alerts;
+package alerts.rpc;
 
 service Events {
-  rpc ReceiveOne (Event) returns (Empty) {}
+  rpc ReceiveOne (Event) returns (EEmpty) {}
 
-  rpc ReceiveStream (stream Event) returns (Empty) {}
+  rpc ReceiveStream (stream Event) returns (EEmpty) {}
 }
 
 message Event {
@@ -18,5 +18,5 @@ message Event {
   uint32 diastolic = 4;
 }
 
-message Empty {
-}
+// Note: workaround for error when using google.protobuf.Empty
+message EEmpty {}

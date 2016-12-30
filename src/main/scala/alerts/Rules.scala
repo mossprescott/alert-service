@@ -1,6 +1,7 @@
 package alerts
 
-object Rules {
+/** Application logic for alerts. */
+object rules {
   def heartRateAlert(userId: UserId, hr: HeartRate): Option[AbnormalHeartRateAlert] = 
     if (hr.value > 190) Some(AbnormalHeartRateAlert(userId, hr))
     else None
